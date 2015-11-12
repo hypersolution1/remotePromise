@@ -1,0 +1,10 @@
+{
+  "name": "remotePromise",
+  "description": "Allow remote promise over stream",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "bluebird": "2.9.27",
+    "dnode": "1.2.1"
+  }
+}
