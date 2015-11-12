@@ -1,7 +1,7 @@
 var net = require('net');
 var Promise = require('bluebird');
 
-var remotePromise = require('..');
+var remotepromise = require('..');
 
 var clientfns = {}; //or "require('...')"
 
@@ -11,7 +11,7 @@ clientfns.publish = function (data) {
 
 var c = net.connect(5004);
 
-remotePromise.instantiate(c, clientfns)
+remotepromise.instantiate(c, clientfns)
 .then(function (server) {
 	//interact with server Promises
 	server.test()

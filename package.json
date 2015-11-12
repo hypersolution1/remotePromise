@@ -1,8 +1,12 @@
 {
-  "name": "remotePromise",
+  "name": "remotepromise",
   "description": "Allow remote promise over stream",
-  "version": "0.0.1",
-  "private": false,
+  "version": "0.0.3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hypersolution1/remotePromise.git"
+  },
   "dependencies": {
     "bluebird": "2.9.27",
     "dnode": "1.2.1"

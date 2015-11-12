@@ -1,4 +1,4 @@
-# remotePromise
+# remotepromise
 
 Remote procedure call over stream wrapped into Promises.
 
@@ -18,7 +18,7 @@ server:
 var net = require('net');
 var Promise = require('bluebird');
 
-var remotePromise = require('remotePromise');
+var remotepromise = require('remotepromise');
 
 var serverfns = {}; //or "require('...')"
 
@@ -36,7 +36,7 @@ serverfns.test = function () {
 }
 
 var server = net.createServer(function (c) {
-	remotePromise.instantiate(c, serverfns)
+	remotepromise.instantiate(c, serverfns)
 	.then(function (client) {
 		//interact with client Promises
 		function broadcast() {
@@ -64,7 +64,7 @@ client:
 var net = require('net');
 var Promise = require('bluebird');
 
-var remotePromise = require('remotePromise');
+var remotepromise = require('remotepromise');
 
 var clientfns = {}; //or "require('...')"
 
@@ -74,7 +74,7 @@ clientfns.publish = function (data) {
 
 var c = net.connect(5004);
 
-remotePromise.instantiate(c, clientfns)
+remotepromise.instantiate(c, clientfns)
 .then(function (server) {
 	//interact with server Promises
 	server.test()
@@ -92,5 +92,5 @@ remotePromise.instantiate(c, clientfns)
 With [npm](http://npmjs.org) do:
 
 ```
-npm install remotePromise
+npm install remotepromise
 ```
