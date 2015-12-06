@@ -1,12 +1,27 @@
 var dnode = require('dnode');
 var Promise = require('bluebird');
 
-var CloseStreamError = exports.CloseStreamError = function (message) {
-    this.name = 'CloseStreamError';
+var ClosedStreamError = exports.ClosedStreamError = function (message) {
+    this.name = 'ClosedStreamError';
     this.message = message;
-    this.stack = (new Promise.OperationalError()).stack;
+    this.stack = (new Error()).stack;
 }
-CloseStreamError.prototype = new Promise.OperationalError;
+ClosedStreamError.prototype = new Error;
+
+var RemoteError = exports.RemoteError = function (err) {
+    this.name = 'RemoteError';
+    this.message = err.message;
+    this.remote = err;
+}
+RemoteError.prototype = new Error;
+
+var RemoteOperationalError = exports.RemoteOperationalError = function (err) {
+    this.name = 'RemoteOperationalError';
+    this.message = err.message;
+    this.remote = err;
+}
+RemoteOperationalError.prototype = new Promise.OperationalError;
+
 
 var remotepromise = function (stream, promises) {
 
@@ -19,7 +34,7 @@ var remotepromise = function (stream, promises) {
             return new Promise(function(fnresolve, fnreject) {
 
                 if(ended) {
-                    fnreject(new CloseStreamError("Stream Closed!"));
+                    fnreject(new ClosedStreamError("Stream Closed!"));
                     return;
                 }
 
@@ -35,7 +50,14 @@ var remotepromise = function (stream, promises) {
                     var cbargs = Array.prototype.slice.call(arguments);
                     var err = cbargs.shift();
                     if(err) {
-                        fnreject(new Promise.OperationalError(err));
+                        if(err instanceof Object && typeof err.message == "string" && typeof err.name == "string") {
+                            if(err.name == "OperationalError") {
+                                err = new RemoteOperationalError(err);
+                            } else if (/Error$/.test(err.name)) {
+                                err = new RemoteError(err);
+                            }
+                        }
+                        fnreject(err);
                     } else {
                         fnresolve.apply(this, cbargs);
                     }
@@ -61,8 +83,7 @@ var remotepromise = function (stream, promises) {
                 cb(null, retval);
             })
             .catch(function (err) {
-                //console.log(err);
-                cb(err.toString());
+                cb((err instanceof Object) ? JSON.parse(JSON.stringify(err, Object.keys(err).concat(['name', 'message', 'stack']))) : err);
             })
         }
     }
@@ -98,11 +119,11 @@ var remotepromise = function (stream, promises) {
         d.on('end', function (err) {
             ended = true;
             fnrejects.forEach(function (fnreject) {
-                fnreject(new CloseStreamError("Stream Closed!"));
+                fnreject(new ClosedStreamError("Stream Closed!"));
             })
             fnrejects = [];
             if(reject) {
-                reject(new CloseStreamError("Stream Closed!"));
+                reject(new ClosedStreamError("Stream Closed!"));
                 resolve = null;
                 reject = null;
             }
