@@ -22,6 +22,10 @@ serverfns.testError = function () {
 	//Throw an error, the remote Promise will be rejected with a RemoteError, trapped with .catch()
 	//RemoteError.remote contains the remote error object
 	throw new Error("err!");
+	//throw {
+    //    key1: "value1",
+    //    key2: {key3: "value3", key1: "value4"}
+    //};
 	//or an OperationalError, rejected with a RemoteOperationalError, trapped with .error()
 	//throw new Promise.OperationalError("err!");
 }

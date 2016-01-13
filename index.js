@@ -22,6 +22,24 @@ var RemoteOperationalError = exports.RemoteOperationalError = function (err) {
 }
 RemoteOperationalError.prototype = new Promise.OperationalError;
 
+function getNestedKeys(obj) {
+    all_keys = {};
+    function get_internal(obj) {
+        var keys = Object.keys(obj);
+        var k_l = keys.length;
+        var value, key;
+        for (var i = 0; i < k_l; i++) {      
+            key = keys[i];
+            all_keys[key] = 1;
+            value = obj[key];
+            if (value instanceof Object) {
+                get_internal(value);
+            }         
+        }
+    }
+    get_internal(obj);
+    return Object.keys(all_keys);
+}
 
 var remotepromise = function (stream, promises) {
 
@@ -83,7 +101,7 @@ var remotepromise = function (stream, promises) {
                 cb(null, retval);
             })
             .catch(function (err) {
-                cb((err instanceof Object) ? JSON.parse(JSON.stringify(err, Object.keys(err).concat(['name', 'message', 'stack']))) : err);
+                cb((err instanceof Object) ? JSON.parse(JSON.stringify(err, getNestedKeys(err).concat(['name', 'message', 'stack']))) : err);
             })
         }
     }
