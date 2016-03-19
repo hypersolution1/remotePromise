@@ -106,6 +106,25 @@ var remotepromise = function (stream, promises) {
         }
     }
 
+    function streamTimeout(s, timeout, cb) {
+        console.log("streamTimeout: set");
+        var tm = setTimeout(function() {
+            console.log("streamTimeout: timeout");
+            s.end();
+            if(cb) {
+                cb();
+            }
+        }, timeout);
+        s.on('remote', function() {
+            console.log("streamTimeout: remote");
+            clearTimeout(tm);
+        })
+        s.on('error', function() {
+            console.log("streamTimeout: error");
+            clearTimeout(tm);
+        })
+    }
+
     return new Promise(function(resolve, reject) {
 
         var remotefns;
@@ -116,6 +135,7 @@ var remotepromise = function (stream, promises) {
             }
         }
         var d = dnode(remotefns);
+
         d.on('remote', function (remote) {
             for(var i in remote) {
                 remote[i] = promisify(remote[i]);
@@ -128,10 +148,18 @@ var remotepromise = function (stream, promises) {
         });
 
         d.on('fail', function (err) {
-            console.log('dnode fail',err);
+            if(reject) {
+                reject(new ClosedStreamError("Stream error: " + err));
+                resolve = null;
+                reject = null;
+            }
         });
         d.on('error', function (err) {
-            console.log('dnode error',err);
+            if(reject) {
+                reject(new ClosedStreamError("Stream error: " + err));
+                resolve = null;
+                reject = null;
+            }
         });
 
         d.on('end', function (err) {
@@ -148,6 +176,13 @@ var remotepromise = function (stream, promises) {
         })
 
         stream.pipe(d).pipe(stream);
+        streamTimeout(d, 20000, function() {
+            if(reject) {
+                reject(new ClosedStreamError("Stream Timeout!"));
+                resolve = null;
+                reject = null;
+            }
+        });
 
     });
 
