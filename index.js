@@ -107,20 +107,16 @@ var remotepromise = function (stream, promises) {
     }
 
     function streamTimeout(s, timeout, cb) {
-        console.log("streamTimeout: set");
         var tm = setTimeout(function() {
-            console.log("streamTimeout: timeout");
             s.end();
             if(cb) {
                 cb();
             }
         }, timeout);
         s.on('remote', function() {
-            console.log("streamTimeout: remote");
             clearTimeout(tm);
         })
         s.on('error', function() {
-            console.log("streamTimeout: error");
             clearTimeout(tm);
         })
     }
